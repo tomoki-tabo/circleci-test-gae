@@ -1,0 +1,98 @@
+version: 2.1
+orbs:
+  gcp-cli: circleci/gcp-cli@1.3.0
+
+jobs:
+  build:
+    working_directory: ~/repo
+    docker:
+      - image: google/cloud-sdk:latest
+
+    steps:
+      - checkout
+      - gcp-cli/initialize
+      - run:
+          name: Deploy to Google App Engine
+          command: |
+            gcloud --quiet app deploy app.yaml
+
+# version: 2.1
+# executors:
+#   default:
+#     working_directory: ~/workspace
+#     docker:
+#       - image: node:12
+
+# commands:
+#   restore_npm:
+#     steps:
+#       - restore_cache:
+#           name: Restore npm dependencies
+#           key: npm-{{ checksum "package.json" }}
+
+#   save_npm:
+#     steps:
+#       - save_cache:
+#           name: Cache npm dependencies
+#           key: npm-{{ checksum "package.json" }}
+#           paths:
+#             - ~/workspace/node_modules
+
+# jobs:
+#   setup:
+#     executor:
+#       name: default
+#     steps:
+#       - checkout
+#       - run:
+#           name: Install dependencies
+#           command: npm install
+#       - save_npm
+
+#   lint:
+#     executor:
+#       name: default
+#     steps:
+#       - checkout
+#       - restore_npm
+#       - run: 
+#           name: Lint
+#           command: npm run lint
+#       - save_npm
+
+#   build:
+#     executor:
+#       name: default
+#     steps:
+#       - checkout
+#       - restore_npm
+#       - run: 
+#           name: Build
+#           command: npm run build
+#       - save_npm
+
+#   test:
+#     executor:
+#       name: default
+#     steps:
+#       - checkout
+#       - restore_npm
+#       - run: 
+#           name: Test
+#           command: npm run test:unit
+#       - save_npm
+  
+# workflows:
+#   pull-request:
+#     jobs:
+#       - setup
+#       - lint:
+#           requires:
+#             - setup
+#       - build:
+#           requires:
+#             - lint
+#       - test:
+#           requires:
+#             - build
+
