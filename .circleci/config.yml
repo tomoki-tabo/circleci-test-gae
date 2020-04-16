@@ -1,29 +1,21 @@
-version: 2
+version: 2.1
+orbs:
+  gcp-cli: circleci/gcp-cli@1.3.0
+
 jobs:
   build:
-    working_directory: ~/app
+    working_directory: ~/repo
     docker:
-      - image: circleci/node:8.10.0
-    steps:
-      - checkout
-      - run: echo 1 
-  deploy:
-    working_directory: ~/app
-    docker:
-      - image: google/cloud-sdk:217.0.0-alpine
-    steps:
-      - checkout
-      - run: npm install
-      - run: npm build
-      - run: echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-      - run: gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-      - run: gcloud app deploy --quiet --project sandbox-tomokitabo
+      - image: google/cloud-sdk:latest
 
-workflows:
-  version: 2
-  main:
-    jobs:
-      - deploy:
+    steps:
+      - checkout
+      - gcp-cli/initialize
+      - run:
+          name: Deploy to Google App Engine
+          command: |
+            gcloud --quiet app deploy app.yaml
+            
 
 # version: 2.1
 # executors:
