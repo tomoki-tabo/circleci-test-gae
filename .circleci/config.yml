@@ -1,80 +1,107 @@
-version: 2.1
-executors:
-  default:
-    working_directory: ~/workspace
-    docker:
-      - image: node:12
-
-commands:
-  restore_npm:
-    steps:
-      - restore_cache:
-          name: Restore npm dependencies
-          key: npm-{{ checksum "package.json" }}
-
-  save_npm:
-    steps:
-      - save_cache:
-          name: Cache npm dependencies
-          key: npm-{{ checksum "package.json" }}
-          paths:
-            - ~/workspace/node_modules
-
+version: 2
 jobs:
-  setup:
-    executor:
-      name: default
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: npm install
-      - save_npm
-
-  lint:
-    executor:
-      name: default
-    steps:
-      - checkout
-      - restore_npm
-      - run: 
-          name: Lint
-          command: npm run lint
-      - save_npm
-
   build:
-    executor:
-      name: default
+    working_directory: ~/app
+    docker:
+      - image: circleci/node:8.10.0
     steps:
       - checkout
-      - restore_npm
-      - run: 
-          name: Build
-          command: npm run build
-      - save_npm
+      - run: echo 1 
+  deploy:
+    working_directory: ~/app
+    docker:
+      - image: google/cloud-sdk:217.0.0-alpine
+    steps:
+      - checkout
+      - run: npm install
+      - run: npm build
+      - run: echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+      - run: gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+      - run: gcloud app deploy --quiet --project sandbox-tomokitabo
 
-  test:
-    executor:
-      name: default
-    steps:
-      - checkout
-      - restore_npm
-      - run: 
-          name: Test
-          command: npm run test:unit
-      - save_npm
-  
 workflows:
-  pull-request:
+  version: 2
+  main:
     jobs:
-      - setup
-      - lint:
-          requires:
-            - setup
-      - build:
-          requires:
-            - lint
-      - test:
-          requires:
-            - build
+      - deploy:
+
+# version: 2.1
+# executors:
+#   default:
+#     working_directory: ~/workspace
+#     docker:
+#       - image: node:12
+
+# commands:
+#   restore_npm:
+#     steps:
+#       - restore_cache:
+#           name: Restore npm dependencies
+#           key: npm-{{ checksum "package.json" }}
+
+#   save_npm:
+#     steps:
+#       - save_cache:
+#           name: Cache npm dependencies
+#           key: npm-{{ checksum "package.json" }}
+#           paths:
+#             - ~/workspace/node_modules
+
+# jobs:
+#   setup:
+#     executor:
+#       name: default
+#     steps:
+#       - checkout
+#       - run:
+#           name: Install dependencies
+#           command: npm install
+#       - save_npm
+
+#   lint:
+#     executor:
+#       name: default
+#     steps:
+#       - checkout
+#       - restore_npm
+#       - run: 
+#           name: Lint
+#           command: npm run lint
+#       - save_npm
+
+#   build:
+#     executor:
+#       name: default
+#     steps:
+#       - checkout
+#       - restore_npm
+#       - run: 
+#           name: Build
+#           command: npm run build
+#       - save_npm
+
+#   test:
+#     executor:
+#       name: default
+#     steps:
+#       - checkout
+#       - restore_npm
+#       - run: 
+#           name: Test
+#           command: npm run test:unit
+#       - save_npm
+  
+# workflows:
+#   pull-request:
+#     jobs:
+#       - setup
+#       - lint:
+#           requires:
+#             - setup
+#       - build:
+#           requires:
+#             - lint
+#       - test:
+#           requires:
+#             - build
 
