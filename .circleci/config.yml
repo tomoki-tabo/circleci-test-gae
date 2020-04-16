@@ -11,14 +11,14 @@ commands:
       - restore_cache:
           name: Restore npm dependencies
           key: npm-{{ checksum "package.json" }}
-          working_directory: sample/
 
   save_npm:
     steps:
       - save_cache:
           name: Cache npm dependencies
           key: npm-{{ checksum "package.json" }}
-          working_directory: sample/
+          paths:
+            - /workspace/sample/node_modules
 
 jobs:
   setup:
