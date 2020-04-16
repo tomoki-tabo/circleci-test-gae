@@ -17,6 +17,7 @@ commands:
       - save_cache:
           name: Cache npm dependencies
           key: npm-{{ checksum "package.json" }}
+          working_directory: sample/
           paths:
             - /workspace/sample/node_modules
 
